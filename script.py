@@ -43,23 +43,19 @@ def perform_handwritten_ocr(image_path):
 
     result = predictor(doc)
 
-    json_output = result.export()
-
     result.show(doc)
 
-    # Saving JSON output
-    try:
-        with open('output.json', 'w') as f:
-            json.dump(json_output, f, indent=4)
-        print("JSON output saved to output.json")
-    except Exception as e:
-        print("An error occurred while saving the JSON output:", str(e))
+    hocr_output = result.export(format='hocr')
+    with open('output_doctr.hocr', 'w', encoding='utf-8') as f:
+        f.write(hocr_output)
+    print("HOCR output saved to output_doctr.hocr")
 
 
 def perform_ocr_with_tesseract(image_path, lang):
     if pytesseract is not None:
         custom_config = r'--oem 3 --psm 6' #Adjust tesseract configurations according to need. I found these configs best suited for Indic OCR
         result = pytesseract.image_to_data(image_path, output_type=pytesseract.Output.DICT, config=custom_config)
+        hocr_output = pytesseract.image_to_pdf_or_hocr(image_path, extension='hocr', config=custom_config)
         print("Tesseract OCR Result:")
         print(result['text'])
 
@@ -75,15 +71,14 @@ def perform_ocr_with_tesseract(image_path, lang):
                 draw.rectangle([x, y, x + w, y + h], outline="green", width=2)
         img.show()
 
-        # Saving Tesseract output in JSON
-        json_output = {'tesseract': result}
-        with open('output_tesseract.json', 'w') as f:
-            json.dump(json_output, f, indent=4)
+        with open('output_tesseract.hocr', 'wb') as f:
+            f.write(hocr_output)
+        print("HOCR output saved to output_tesseract.hocr")
     else:
         print("Pytesseract is not available. Please Install pytesseract first.")
 
 def main():
-    image_path = 'testy pr.png'  # Provide the image path
+    image_path = 'Image path'  # Provide the image path
 
     print("Choose OCR method:")
     print("1. Doctr")
